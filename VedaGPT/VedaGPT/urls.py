@@ -18,7 +18,8 @@ from django.contrib import admin
 from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
-from models.views import index ,send,clear_records,viewFile,SignupPage,LoginPage,LogoutPage,getHistory,createChat
+# from models.views import index ,send,clear_records,viewFile,SignupPage,LoginPage,LogoutPage,getHistory,createChat,model
+from models.views import *
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -34,6 +35,7 @@ urlpatterns = [
     path('getHistory',getHistory,name='getHistory'),
     
     path('createChat',createChat,name='createChat'),
+     path('model/<int:model_no>/', model, name='model')
 
 ]
 

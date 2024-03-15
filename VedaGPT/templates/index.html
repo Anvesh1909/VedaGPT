@@ -27,11 +27,11 @@
                 <div class="nav-item dropdown">
                     
                     <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        Models
+                        {{model}}
                     </a>
                     <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="#">Model-1</a></li>
-                        <li><a class="dropdown-item" href="#">Model-2</a></li>
+                        <li><a class="dropdown-item" href="{% url "model" model_no=1 %}">Laama</a></li>
+                        <li><a class="dropdown-item" href="{% url "model" model_no=2 %}">Geema</a></li>
                         <li><hr class="dropdown-divider"></li>
                         <li><a class="dropdown-item" href="#">Custom Model</a></li>
                     </ul>
@@ -193,7 +193,7 @@
                             var filename = data.filename;  // Make sure your JSON response contains the filename
                             var documentLink = '<a class="dropdown-item" href="/view-file/' + filename + '" target="_blank">' + filename + '</a>';
                             $('#document').append(documentLink).show(); 
-                        $('#result-message').append('<p class="text-start m-3 fw-bold p-3 mb-2 bg-warning text-dark"> VedaGPT: ' + data.reply + '</p>').show();  
+                            $('#result-message').append('<p class="text-start m-3 fw-bold p-3 mb-2 bg-warning text-dark"> VedaGPT: ' + data.reply + '</p>').show();  
                     }
                  }
             });

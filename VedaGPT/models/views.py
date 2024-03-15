@@ -4,10 +4,10 @@ from django.http import HttpResponse, FileResponse, JsonResponse
 from django.shortcuts import render, redirect
 from django.conf import settings
 from django.core.files.storage import default_storage
-# from .privatellm import llmcopy
-# from .privatellm import Promt_reply
-# from .privatellm import IfPdf
-from .models import Chat,Documents,Transaction
+
+from .privatellm import Laama,Geema
+from .privatellm import IfPdf
+from .models import Chat,Transaction
 import os
 import mimetypes
 
@@ -16,6 +16,8 @@ from django.contrib.auth import authenticate,login,logout
 from django.contrib.auth.decorators import login_required
 
 current_chat=0
+model = "Laama"
+
 
 def index(request):
     
@@ -57,15 +59,15 @@ def index(request):
         except Chat.DoesNotExist:
             pass
     
-    documents = Documents.objects.filter(user = user)
     # Collect information about available documents
     # documents = [{'name': f, 'url': default_storage.url(f)} for f in os.listdir(media_path) if os.path.isfile(os.path.join(media_path, f))]
 
     
     context = {
-        'documents': documents,
+        # 'documents': documents,
         'chat_history': chat_history,
-        'history': history
+        'history': history,
+        'model' : model,
     }
     return render(request, 'index.html', context)
 
@@ -92,16 +94,24 @@ def send(request):
         file_url = default_storage.url(file_path)
 
   
-        # context = IfPdf.context(os.path.join(settings.MEDIA_ROOT, filename), prompt)
-        
-        document = Documents.objects.create(user = user, doc_name = file_url)
+        context = IfPdf.context(os.path.join(settings.MEDIA_ROOT, filename), prompt)
+        print("pdf Reply")
         # reply = Promt_reply.replyPdf(prompt, context)
-        reply="prompt"
-        transaction_instance = Transaction.objects.create(chat=current_chat, doc=document, input_prompt=prompt, output=reply)
+        if model == "Laama":
+            reply=Laama.replyPdf(prompt, context)
+        # if model == "Gamma":
+        else:
+            reply=Geema.replyPdf(prompt, context)
+        transaction_instance = Transaction.objects.create(chat=current_chat, input_prompt=prompt, output=reply)
     else:
         # Generate a reply based on the prompt
         # reply = Promt_reply.reply(prompt)
-        reply="prompt"
+        print("message reply")
+        if model == "Laama":
+            reply=Laama.reply(prompt)
+        # if model == "Gamma":
+        else:
+            reply=Geema.reply(prompt)
         
         transaction_instance = Transaction.objects.create(chat=current_chat, input_prompt=prompt, output=reply)
     
@@ -205,3 +215,13 @@ def createChat(request):
     global current_chat
     current_chat = 0
     return redirect('index')
+
+
+def model(request,model_no):
+    global model
+    if model_no == 1 :
+        model = "Laama"
+    if model_no == 2 :
+        model = "Geema"
+    return redirect('index')
+
