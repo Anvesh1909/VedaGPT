@@ -23,3 +23,8 @@ class Transaction(models.Model):
         return self.input_prompt
 
 
+class Documents(models.Model):
+    chat = models.ForeignKey(Chat, on_delete=models.CASCADE)
+    name = models.CharField(max_length=255)
+    file_path = models.CharField(max_length=255)
+    

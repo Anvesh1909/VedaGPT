@@ -4,10 +4,11 @@ from django.http import HttpResponse, FileResponse, JsonResponse
 from django.shortcuts import render, redirect
 from django.conf import settings
 from django.core.files.storage import default_storage
+from django.core.files.base import ContentFile
 
 from .privatellm import Laama,Geema
 from .privatellm import IfPdf
-from .models import Chat,Transaction
+from .models import Chat,Transaction,Documents
 import os
 import mimetypes
 
@@ -17,11 +18,11 @@ from django.contrib.auth.decorators import login_required
 
 current_chat=0
 model = "Laama"
-
+filesUploaded = []
 
 def index(request):
-    
-    global current_chat
+
+    global current_chat,model
     user = request.user
     # remove this if we want only users can access this website
     if not user.is_authenticated:
@@ -60,11 +61,10 @@ def index(request):
             pass
     
     # Collect information about available documents
-    # documents = [{'name': f, 'url': default_storage.url(f)} for f in os.listdir(media_path) if os.path.isfile(os.path.join(media_path, f))]
+    documents = Documents.objects.filter(chat=current_chat)
 
-    
     context = {
-        # 'documents': documents,
+        'documents': documents,
         'chat_history': chat_history,
         'history': history,
         'model' : model,
@@ -78,31 +78,25 @@ def send(request):
     
     if request.method=='POST':
         prompt = request.POST['message']
-        file = request.FILES.get('file')
-
         if current_chat == 0:
             chat=Chat.objects.create(user=user,title=prompt[:15])
             current_chat=chat
             print(current_chat,"chat id created")
     
+    documents = Documents.objects.filter(chat=current_chat)
 
-    filename = file.name if file else None
-
-    if file:
-     
-        file_path = default_storage.save(filename, file)
-        file_url = default_storage.url(file_path)
-
-  
-        context = IfPdf.context(os.path.join(settings.MEDIA_ROOT, filename), prompt)
-        print("pdf Reply")
-        # reply = Promt_reply.replyPdf(prompt, context)
-        if model == "Laama":
-            reply=Laama.replyPdf(prompt, context)
-        # if model == "Gamma":
-        else:
-            reply=Geema.replyPdf(prompt, context)
-        transaction_instance = Transaction.objects.create(chat=current_chat, input_prompt=prompt, output=reply)
+    if documents:
+        for document in documents:
+            file_path = os.path.join(settings.MEDIA_ROOT, document.file_path)
+            context = IfPdf.context(file_path, prompt)
+            print("pdf Reply")
+            # reply = Promt_reply.replyPdf(prompt, context)
+            if model == "Laama":
+                reply=Laama.replyPdf(prompt, context)
+            # if model == "Gamma":
+            else:
+                reply=Geema.replyPdf(prompt, context)
+            transaction_instance = Transaction.objects.create(chat=current_chat, input_prompt=prompt, output=reply)
     else:
         # Generate a reply based on the prompt
         # reply = Promt_reply.reply(prompt)
@@ -120,7 +114,7 @@ def send(request):
 
     context = {
         'reply': reply,
-        'filename': filename,
+        # 'filename': document.file_path,
     }
 
     return JsonResponse(context)
@@ -145,6 +139,7 @@ def clear_records(request):
 
     return redirect('index')
 
+from django.contrib.staticfiles.views import serve
 
 def viewFile(request, fileName):
     file_path = os.path.join(settings.MEDIA_ROOT, fileName)
@@ -152,11 +147,12 @@ def viewFile(request, fileName):
     if os.path.exists(file_path):
         context = {
             'filename': fileName,
-            'filepath': file_path,
+            'filepath': serve(request, fileName),  # Use Django's serve view
         }
         return render(request, 'file.html', context)
     else:
         return HttpResponse("File not found", status=404)
+    
 
 
 def SignupPage(request):
@@ -225,3 +221,27 @@ def model(request,model_no):
         model = "Geema"
     return redirect('index')
 
+def Upload(request):
+    global current_chat
+    user = request.user
+    if request.method == 'POST' and request.FILES['file-uploaded']:
+        uploaded_file = request.FILES['file-uploaded']
+        
+        # Save file to media directory
+        file_name = default_storage.save(uploaded_file.name, ContentFile(uploaded_file.read()))
+        if current_chat == 0:
+            chat=Chat.objects.create(user=user,title=uploaded_file.name)
+            current_chat=chat
+            print(current_chat,"chat id created in file uploaded")
+
+        # Create a record in the database
+        file_instance = Documents.objects.create(
+            chat=current_chat,
+            name=uploaded_file.name,
+            file_path=file_name
+        )
+    else:
+        pass
+
+
+    return redirect('index')

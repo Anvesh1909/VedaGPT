@@ -1,0 +1,25 @@
+.close {
+    font-size: 90%;
+    font-weight: 600;
+    display: inline-block;
+  }
+
+  .file-uploaded{
+    display: none;
+  }
+  
+  .label-file {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: white;
+    height: 100px;
+    width: 100%;
+    border-radius: 6px;
+    border : 1px dashed #999;
+  }
+  
+  .label-file:hover{
+    color: #de0611;
+    border: 1px dashed #de0611;
+  }

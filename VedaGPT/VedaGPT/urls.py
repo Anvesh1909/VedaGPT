@@ -35,7 +35,8 @@ urlpatterns = [
     path('getHistory',getHistory,name='getHistory'),
     
     path('createChat',createChat,name='createChat'),
-     path('model/<int:model_no>/', model, name='model')
+    path('model/<int:model_no>/', model, name='model'),
+    path('Upload',Upload,name='Upload'),
 
 ]
 
