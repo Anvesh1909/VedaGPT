@@ -224,7 +224,7 @@ def model(request,model_no):
 def Upload(request):
     global current_chat
     user = request.user
-    if request.method == 'POST' and request.FILES['file-uploaded']:
+    if request.method == 'POST' and 'file-uploaded' in request.FILES:
         uploaded_file = request.FILES['file-uploaded']
         
         # Save file to media directory

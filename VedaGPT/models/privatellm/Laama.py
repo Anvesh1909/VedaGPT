@@ -68,7 +68,7 @@ def replyPdf(prompt, context):
                         Context : {context}
                         [/INST]
                     ''',
-            "temperature": 0.1, "top_p": 0.9, "max_length": 128, "repetition_penalty": 1
+            "temperature": 0.1, "top_p": 0.9, "max_length": 1000, "repetition_penalty": 1
         }
     )
     for item in output:

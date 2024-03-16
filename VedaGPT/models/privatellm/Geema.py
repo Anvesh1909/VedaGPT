@@ -33,7 +33,7 @@ def reply(prompt):
                         [/INST]
                     
                     ''',
-            "temperature": 0.7,
+            "temperature": 0.1,
             "max_new_tokens": 512,
             "min_new_tokens": -1,
             "repetition_penalty": 1
