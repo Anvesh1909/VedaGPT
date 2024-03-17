@@ -26,8 +26,8 @@ urlpatterns = [
     path('', index, name='index'),
     path('send', send, name='send'),
     path('clear_records',clear_records,name='clear_records'),
-    path('view-file/<str:fileName>/', viewFile, name='view_file'), 
-
+    path('viewFile/<str:fileName>/', view_file, name='view_file'),
+    
     path('signup',SignupPage,name='signup'),
     path('login/',LoginPage,name='login'),
     path('logout',LogoutPage,name='logout'),

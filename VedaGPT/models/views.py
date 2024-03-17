@@ -141,18 +141,22 @@ def clear_records(request):
 
 from django.contrib.staticfiles.views import serve
 
-def viewFile(request, fileName):
-    file_path = os.path.join(settings.MEDIA_ROOT, fileName)
+
+import urllib.parse
+
+def view_file(request, fileName):
+    file_name = urllib.parse.unquote(fileName)
+    document = Documents.objects.filter(chat=current_chat)
+    file_path = os.path.join(settings.MEDIA_ROOT)
 
     if os.path.exists(file_path):
         context = {
-            'filename': fileName,
-            'filepath': serve(request, fileName),  # Use Django's serve view
+            'filename': file_name,
+            'filepath': file_path,  # Use Django's serve view
         }
         return render(request, 'file.html', context)
     else:
         return HttpResponse("File not found", status=404)
-    
 
 
 def SignupPage(request):
@@ -195,7 +199,7 @@ def LogoutPage(request):
     return redirect('login')
     
 def getHistory(request):
-   
+
     user = request.user
     
     history = Chat.objects.filter(user=user)

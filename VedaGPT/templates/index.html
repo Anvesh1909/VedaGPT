@@ -10,8 +10,12 @@
     <link rel="stylesheet" href="{% static "css/style.css" %}" type="text/css">
     <link rel="stylesheet" href="{% static "bootstrap/css/bootstrap.min.css" %}" type="text/css">    
 
+    <!-- JS Files -->
+    <script src="{% static "js/jquery.js" %}" type="text/javascript" ></script>
     <script src="{% static "js/script.js" %}" type="text/javascript"></script>
-    <script src="https://code.jquery.com/jquery-3.1.1.min.js" integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous"></script>
+
+    {% comment %} <script src="https://code.jquery.com/jquery-3.1.1.min.js" integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous"></script> {% endcomment %}
+
 </head>
 <body class="p-3 mb-2 bg-info text-dark">
     
@@ -72,7 +76,7 @@
                                 </a>
                                 <div class="dropdown-menu" aria-labelledby="navbarDropdown" id='document'>
                                   {% for doc in documents %}
-                                          <a class="dropdown-item" href="view-file/{{ doc.name }}" target="_blank">{{ doc.name }}</a>
+                                          <a class="dropdown-item" href="viewFile/{{ doc.name }}" target="_blank">{{ doc.name }}</a>
                                   {% endfor %}
                               </div>
                             </li>
@@ -125,8 +129,9 @@
                 {% if documents %}
                 <h3>Uploaded File</h3>
                     {% for doc in documents %}
-                            <a class="dropdown-item" href="view-file/{{ doc.name }}" target="_blank">{{ doc.name }}</a>
+                        <a class="dropdown-item" href="{% url 'view_file' doc.name|urlencode %}" target="_blank">{{ doc.name }}</a>
                     {% endfor %}
+            
                 {% else %}
                 <div class="drop_box">
                     <header>
