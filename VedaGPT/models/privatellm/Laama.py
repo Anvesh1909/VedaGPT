@@ -1,77 +1,65 @@
-import replicate
 import os
+from sentence_transformers import SentenceTransformer
+from transformers import AutoTokenizer, AutoConfig, AutoModelForCausalLM
+from transformers import AutoTokenizer, AutoConfig, AutoModelForCausalLM 
 
-# Set the Replicate API token
-os.environ["REPLICATE_API_TOKEN"] = "r8_UlQcSfz5ttfznmTwiH3R2B0gztZAzxv1fJOHb"
+import torch
+import re
 
-def reply(prompt):
-    """
-    Generate a reply using the Replicate API based on a given prompt.
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+tokenizer = AutoTokenizer.from_pretrained("meta-llama/Llama-2-7b-chat-hf", 
+                                          cache_dir="/data/VedaGPT/base_models"
+                                         )
 
-    Args:
-    - prompt (str): The user's input prompt.
+def get_llama2_chat_reponse(prompt, max_new_tokens=50):
+    inputs = tokenizer(prompt, return_tensors="pt").to(device)
+    outputs = model.generate(**inputs, max_new_tokens=max_new_tokens, temperature= 0.00001)
+    response = tokenizer.decode(outputs[0], skip_special_tokens=True)
+    return response
 
-    Returns:
-    - str: The generated reply.
-    """
-    final = "This is Laama Reply: <br>"
-    pre_prompt = "you are a helpful assistant. You do not respond as 'User' or pretend to be 'User'. You only respond once as 'Assistant'."
-    prompt_input = prompt
-    output = replicate.run(
-        "meta/llama-2-70b-chat:02e509c789964a7ea8736978a43525956ef40397be9033abf9fd2badfe68c9e3",
-        input={
-           "prompt": f'''
-                        
-                        [INST] <<SYS>>
-                            you are a helpful assistant. You do not respond as 'User' or pretend to be 'User'. You only respond once as 'Assistant'.
-                            ,You are a helpful, respectful and honest assistant. Always answer as helpfully as possible, while being safe. Your answers should not include any harmful, unethical, racist, sexist, toxic, dangerous, or illegal content. Please ensure that your responses are socially unbiased and positive in nature.
-                            ,If a question does not make any sense, or is not factually coherent, explain why instead of answering something not correct. If you don't know the answer to a question, please don't share false information.
-                                <</SYS>>
+model = AutoModelForCausalLM.from_pretrained(
+    "meta-llama/Llama-2-7b-chat-hf",
+    cache_dir="/data/VedaGPT/base_models",
+    device_map='auto'
+)
 
-                            Question: {prompt}
-                        [/INST]
-                    
-                    ''',
-            "temperature": 0.1, "top_p": 0.9, "max_length": 128, "repetition_penalty": 1
-        }
-    )
-    for item in output:
-        # Output schema: https://replicate.com/meta/llama-2-70b-chat/api#output-schema
-        final += item
-    return final
+def reply(user_prompt):
+    print("Entered replyPdf: Laama.py")
+    query = user_prompt
+
+    prompt = f'''
+    [INST]
+    Give answer for the question strictly based on the context provided. Keep answers short and to the point.
+
+    Question: {query}
+
+    
+    [/INST]
+    '''
+    result = get_llama2_chat_reponse(prompt, max_new_tokens=80)
+    print("Model Reply:")
+    result = re.sub(r'\[INST\].*?\[/INST\]', '', result)
+    print(result)
+    return result
 
 
-def replyPdf(prompt, context):
-    """
-    Generate a reply using the Replicate API based on a given prompt and context.
 
-    Args:
-    - prompt (str): The user's input prompt.
-    - context (str): The context provided for the question.
+def replyPdf(user_prompt, context):
+    print("Entered replyPdf: Laama.py")
+    
+    query = user_prompt
 
-    Returns:
-    - str: The generated reply.
-    """
-    final = "This is Laama Reply:: <br>"
-   
-    output = replicate.run(
-        "meta/llama-2-70b-chat:02e509c789964a7ea8736978a43525956ef40397be9033abf9fd2badfe68c9e3",
-        input={
-            "prompt": f'''
-                        [INST]
-                        Give an answer for the question strictly based on the context provided.
-                        you are a helpful assistant. You do not respond as 'User' or pretend to be 'User'. You only respond once as 'Assistant'.
-                        You are a helpful, respectful and honest assistant. Always answer as helpfully as possible, while being safe. Your answers should not include any harmful, unethical, racist, sexist, toxic, dangerous, or illegal content. Please ensure that your responses are socially unbiased and positive in nature.
-                        If a question does not make any sense, or is not factually coherent, explain why instead of answering something not correct. If you don't know the answer to a question, please don't share false information.
-                        Question: {prompt}
+    prompt = f'''
+    [INST]
+    Give answer for the question strictly based on the context provided. Keep answers short and to the point.
 
-                        Context : {context}
-                        [/INST]
-                    ''',
-            "temperature": 0.1, "top_p": 0.9, "max_length": 1000, "repetition_penalty": 1
-        }
-    )
-    for item in output:
-        # Output schema: https://replicate.com/meta/llama-2-70b-chat/api#output-schema
-        final += item
-    return final
+    Question: {query}
+
+    Context : {context}
+    [/INST]
+    '''
+    result = get_llama2_chat_reponse(prompt, max_new_tokens=80)
+    print("Model Reply:")
+    result = re.sub(r'\[INST\].*?\[/INST\]', '', result)
+    print(result)
+    return result

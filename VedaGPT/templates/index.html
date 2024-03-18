@@ -95,7 +95,6 @@
                             {% for i in history %}
                                 <div class="row">
                                     <div class="col-10 d-inline">
-                                        <label for="inputPassword2" class="visually-hidden">Password</label>
                                         <button class="form-control btn btn-warning" type="submit" value="{{i.id}}" id="chatHistory" name="chatHistory">
                                             {{i.title}}
                                         </button>
@@ -200,7 +199,7 @@
             // Display the "text-end" message
             $('#result-message').append('<p class="text-end m-3 fw-bold p-3 mb-2 bg-success text-white" style= "border-radius: 10px;"> {user}: <span >' + sentMessage + '</span></p>').show();
             $('#result-message').append('<p class="Hello text-start m-3 fw-bold p-3 mb-2 bg-warning text-dark placeholder-glow " style= "border-radius: 10px;"> VedaGPT <span class="placeholder col-11"><br></span> <span class="placeholder col-11"><br></span></p>').show();
-            
+            $('#message').val('');
             
             $.ajax({
                 type: 'POST',
@@ -213,7 +212,7 @@
                         $('#result-message .Hello').remove();
                         $('#result-message').append('<p class="text-start m-3 fw-bold p-3 mb-2 bg-warning text-dark" style= "border-radius: 10px;"> VedaGPT: ' + data.reply + '</p>').show();  
                         // Clear the message and file inputs after submission
-                        $('#message').val('');
+                       
                  }
             });
 

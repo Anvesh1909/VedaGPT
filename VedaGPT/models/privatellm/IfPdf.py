@@ -7,11 +7,16 @@ import chromadb
 from transformers import AutoTokenizer, AutoConfig, AutoModelForCausalLM
 import torch
 
+chunks = " "
+first = 0
 
 def context(path, query):
+    global chunks,first
     # Chunk the PDF document and obtain embeddings for each chunk
-    chunks = Chunking(path)
-    embeddings = Embeddings(chunks, query)
+    if first == 0 :
+        chunks = Chunking(path)
+        embeddings = Embeddings(chunks, query)
+        first+=1
     
     # Retrieve relevant results from the vector database
     retrieved_results = retrieve_vector_db(query)
