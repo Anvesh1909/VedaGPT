@@ -36,9 +36,9 @@
                     </a>
                     <ul class="dropdown-menu">
                         <li><a class="dropdown-item" href="{% url "model" model_no=1 %}">Laama</a></li>
-                        <li><a class="dropdown-item" href="{% url "model" model_no=2 %}">Geema</a></li>
+                        <li><a class="dropdown-item" href="{% url "model" model_no=2 %}">Gamma</a></li>
                         <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item" href="#">Custom Model</a></li>
+                        <li><a class="dropdown-item" href="{% url "AddModel" %}">Add Model</a></li>
                     </ul>
                 </div>
                 {% if user.username != "AnonymousUser" %}
@@ -171,12 +171,13 @@
         <!-- Input Form -->
         <div class="row fixed-bottom m-2">
             <div class="col m-2">
-                <form id="post-form" enctype="multipart/form-data">
+                <form id="post-form" >
                     {% csrf_token %}
                     <div class="input-group">
                         <input type="hidden" name="chat" value="{{chat.id}}">
                         {% comment %} <input type="file" name="file" class="form-control" id="file" accept=".txt, .pdf, .docx"> {% endcomment %}
-                        <input type="text" name="message" id="message" class="form-control" placeholder="Enter Prompt" aria-label="Recipient's username" aria-describedby="basic-addon2">
+
+                        <textarea  type="text" name="message" id="message" class="form-control" placeholder="Enter Prompt" aria-label="Recipient's username" aria-describedby="basic-addon2" ></textarea>
                         <input class="input-group-text" type="submit" value="Send" id="basic-addon2" />
                     </div>
                 </form>
@@ -197,7 +198,7 @@
             var sentMessage = formData.get('message');
 
             // Display the "text-end" message
-            $('#result-message').append('<p class="text-end m-3 fw-bold p-3 mb-2 bg-success text-white" style= "border-radius: 10px;"> {user}: <span >' + sentMessage + '</span></p>').show();
+            $('#result-message').append('<p class="text-end m-3 fw-bold p-3 mb-2 bg-success text-white" style= "border-radius: 10px;"> {{user}}: <span >' + sentMessage + '</span></p>').show();
             $('#result-message').append('<p class="Hello text-start m-3 fw-bold p-3 mb-2 bg-warning text-dark placeholder-glow " style= "border-radius: 10px;"> VedaGPT <span class="placeholder col-11"><br></span> <span class="placeholder col-11"><br></span></p>').show();
             $('#message').val('');
             
@@ -216,21 +217,10 @@
                  }
             });
 
-            
+            window.scrollTo(0, document.body.scrollHeight);
         });
 
-        // Function to scroll to the specified element
-        function scrollToElement(elementId) {
-            var element = document.getElementById(elementId);
-            if (element) {
-                element.scrollIntoView({ behavior: 'smooth' });
-            }
-        }
 
-        // Scroll to the div with id "scrollToDiv" when the page loads
-        window.onload = function() {
-            scrollToElement('scrollToDiv');
-        };
 
         // FOR FILE Input
            // Get the input element

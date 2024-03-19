@@ -6,8 +6,7 @@ from django.conf import settings
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
 
-from .privatellm import Laama,Geema
-from .privatellm import IfPdf
+from .privatellm import IfPdf,llm
 from .models import Chat,Transaction,Documents
 import os
 import mimetypes
@@ -16,13 +15,20 @@ from django.contrib.auth.models import User
 from django.contrib.auth import authenticate,login,logout
 from django.contrib.auth.decorators import login_required
 
+
+models = {
+    "1" : "Laama",
+    "2" : "Gemma",
+}
+
 current_chat=0
-model = "Laama"
+model_name = "Laama"
+
 filesUploaded = []
 
 def index(request):
 
-    global current_chat,model
+    global current_chat,model_name
     user = request.user
     # remove this if we want only users can access this website
     if not user.is_authenticated:
@@ -67,7 +73,7 @@ def index(request):
         'documents': documents,
         'chat_history': chat_history,
         'history': history,
-        'model' : model,
+        'model' : model_name,
     }
     return render(request, 'index.html', context)
 
@@ -77,9 +83,9 @@ def send(request):
     user = request.user
     
     if request.method=='POST':
-        prompt = request.POST['message']
+        User_prompt = request.POST['message']
         if current_chat == 0:
-            chat=Chat.objects.create(user=user,title=prompt[:15])
+            chat=Chat.objects.create(user=user,title=User_prompt[:15])
             current_chat=chat
             print(current_chat,"chat id created")
     
@@ -88,26 +94,21 @@ def send(request):
     if documents:
         for document in documents:
             file_path = os.path.join(settings.MEDIA_ROOT, document.file_path)
-            context = IfPdf.context(file_path, prompt)
+            prompt = IfPdf.context(file_path, User_prompt)
+
             print("pdf Reply")
-            # reply = Promt_reply.replyPdf(prompt, context)
-            if model == "Laama":
-                reply=Laama.replyPdf(prompt, context)
-            # if model == "Gamma":
-            else:
-                reply=Geema.replyPdf(prompt, context)
-            transaction_instance = Transaction.objects.create(chat=current_chat, input_prompt=prompt, output=reply)
+
+            reply=llm.LLM_reply( prompt, Name = model_name )
+            
+            transaction_instance = Transaction.objects.create(chat=current_chat, input_prompt=User_prompt, output=reply)
     else:
-        # Generate a reply based on the prompt
-        # reply = Promt_reply.reply(prompt)
-        print("message reply")
-        if model == "Laama":
-            reply=Laama.reply(prompt)
-        # if model == "Gamma":
-        else:
-            reply=Geema.reply(prompt)
         
-        transaction_instance = Transaction.objects.create(chat=current_chat, input_prompt=prompt, output=reply)
+        print("message reply")
+        
+        reply=llm.LLM_reply( User_prompt , Name = model_name )
+        
+        
+        transaction_instance = Transaction.objects.create(chat=current_chat, input_prompt = User_prompt, output=reply)
     
     # Save chat history
     transaction_instance.save()
@@ -217,12 +218,11 @@ def createChat(request):
     return redirect('index')
 
 
-def model(request,model_no):
-    global model
-    if model_no == 1 :
-        model = "Laama"
-    if model_no == 2 :
-        model = "Geema"
+def model_view(request, model_no):
+    global model_name
+    
+    model_name = models[f"{model_no}"]
+    print(f"model selected { model_name}")
     return redirect('index')
 
 def Upload(request):
@@ -249,3 +249,8 @@ def Upload(request):
 
 
     return redirect('index')
+
+
+
+def AddModel(request):
+    return render(request,"AddLLM.html")
