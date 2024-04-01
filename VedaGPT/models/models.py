@@ -28,6 +28,14 @@ class Documents(models.Model):
     name = models.CharField(max_length=255)
     file_path = models.CharField(max_length=255)
 
+class LLM_models(models.Model):
 
+    name = models.CharField(max_length=255)
+    modelKEY = models.CharField(max_length=255)
+    file_path = models.CharField(max_length=255)
+
+
+
+    
 
     

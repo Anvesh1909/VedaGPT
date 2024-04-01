@@ -7,7 +7,7 @@ from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
 
 from .privatellm import IfPdf,llm
-from .models import Chat,Transaction,Documents
+from .models import Chat,Transaction,Documents,LLM_models
 import os
 import mimetypes
 
@@ -22,13 +22,15 @@ models = {
 }
 
 current_chat=0
-model_name = "Laama"
+model_selected = LLM_models.objects.get( name = "Laama" ) #default first model
 
 filesUploaded = []
 
+
+@login_required(login_url='login')
 def index(request):
 
-    global current_chat,model_name
+    global current_chat,model_selected
     user = request.user
     # remove this if we want only users can access this website
     if not user.is_authenticated:
@@ -47,7 +49,9 @@ def index(request):
     }
     history = Chat.objects.filter(user=user)
     chat_history = Transaction.objects.filter(chat=current_chat)
-    if request.method == 'GET' and current_chat != 0 :
+
+
+    if request.method == 'GET':
         user = request.user
         deleteChat = request.GET.get("delete")
         if deleteChat is not None:
@@ -68,12 +72,15 @@ def index(request):
     
     # Collect information about available documents
     documents = Documents.objects.filter(chat=current_chat)
+    llm_models=LLM_models.objects.all()
 
     context = {
+        "llm_models" : llm_models,
+        "current_chat" : current_chat,
         'documents': documents,
         'chat_history': chat_history,
         'history': history,
-        'model' : model_name,
+        'model_selected' : model_selected.name,
     }
     return render(request, 'index.html', context)
 
@@ -94,18 +101,18 @@ def send(request):
     if documents:
         for document in documents:
             file_path = os.path.join(settings.MEDIA_ROOT, document.file_path)
-            prompt = IfPdf.context(file_path, User_prompt)
+            context = IfPdf.context(file_path, User_prompt)
 
             print("pdf Reply")
 
-            reply=llm.LLM_reply( prompt, Name = model_name )
+            reply=llm.LLM_reply( User_prompt, context = context, Model_id = model_selected.id  )
             
             transaction_instance = Transaction.objects.create(chat=current_chat, input_prompt=User_prompt, output=reply)
     else:
         
         print("message reply")
         
-        reply=llm.LLM_reply( User_prompt , Name = model_name )
+        reply=llm.LLM_reply( User_prompt ,  Model_id = model_selected.id )
         
         
         transaction_instance = Transaction.objects.create(chat=current_chat, input_prompt = User_prompt, output=reply)
@@ -219,10 +226,11 @@ def createChat(request):
 
 
 def model_view(request, model_no):
-    global model_name
+    global model_selected
     
-    model_name = models[f"{model_no}"]
-    print(f"model selected { model_name}")
+    model_id = LLM_models.objects.get(id = model_no)
+    model_selected = model_id
+    print(f"model selected { model_selected}")
     return redirect('index')
 
 def Upload(request):
@@ -253,4 +261,15 @@ def Upload(request):
 
 
 def AddModel(request):
+    if request.method == 'POST' :
+        Name=request.POST.get('name')
+        ModelKey=request.POST.get('ModelKey')
+        print(request.POST)
+        path = f"{Name}/base_models"
+        llm = LLM_models.objects.create(name=Name, modelKEY = ModelKey, file_path=path)
+        llm.save()
+        print(LLM_models.objects.all())
+        return redirect('index')
+
+    
     return render(request,"AddLLM.html")

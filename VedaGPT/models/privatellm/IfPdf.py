@@ -23,19 +23,8 @@ def context(path, query):
     
     # Concatenate retrieved results for context
     context = '\n\n'.join(retrieved_results[0])
-    prompt = f'''
-                        [INST]
-                        Give an answer for the question strictly based on the context provided.
-                        you are a helpful assistant. You do not respond as 'User' or pretend to be 'User'. You only respond once as 'Assistant'.
-                        You are a helpful, respectful and honest assistant. Always answer as helpfully as possible, while being safe. Your answers should not include any harmful, unethical, racist, sexist, toxic, dangerous, or illegal content. Please ensure that your responses are socially unbiased and positive in nature.
-                        If a question does not make any sense, or is not factually coherent, explain why instead of answering something not correct. If you don't know the answer to a question, please don't share false information.
-                        Question: {query}
 
-                        Context : {context}
-                        [/INST]
-                    '''
-    print(prompt)
-    return prompt
+    return context
 
 
 def Chunking(path):
