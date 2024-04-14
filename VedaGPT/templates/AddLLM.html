@@ -1,0 +1,28 @@
+{% extends "index.html" %}
+
+
+{% block content %}
+
+<br><br><br>
+
+<h1>Add llm</h1>
+
+<form action="" method="post">
+{% csrf_token %}
+<div class="input-group mb-3">
+    <span class="input-group-text" id="basic-addon1">Name of your Model</span>
+    <input type="text" class="form-control" placeholder="Name of your Model" aria-label="Username" aria-describedby="basic-addon1" name= "name">
+</div>
+<div class="input-group mb-3">
+    <span class="input-group-text" id="basic-addon1">Model Key</span>
+    <input type="text" class="form-control" placeholder="Model Key" aria-label="Username" aria-describedby="basic-addon1" name="ModelKey">
+</div>
+
+<button class="btn btn-outline-secondary" type="submit">submit</button>
+
+
+</form>
+
+
+
+{% endblock content %}

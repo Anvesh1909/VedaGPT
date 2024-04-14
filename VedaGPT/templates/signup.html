@@ -1,0 +1,61 @@
+{% extends "index.html" %}
+
+{% block content %}
+
+
+</br></br></br>
+
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-6">
+
+            <div class="text-center">
+                <div class="btn-group">
+                    <a href="/login" class="btn btn-secondary">Login</a>
+                    <a href="/signup" class="btn btn-primary active" aria-current="page">Sign Up</a>
+                </div>
+            </div>
+
+            <form action="" method="post">
+                {% csrf_token %}
+                <br>
+                <div class="text text-center text-bg-dark p-1">
+                    <h1>Sign Up</h1>
+                </div>
+                <br>
+
+                <p style="color: red;">{{ a }}</p>
+
+                <div class="form-row">
+                    <label for="username">Username</label>
+                    <input type="text" class="form-control" placeholder="Username" name="username" id="username">
+                </div>
+
+                <div class="form-row">
+                    <label for="email">Email</label>
+                    <input type="email" class="form-control" placeholder="Email or Phone" name="email" id="email">
+                </div>
+
+                <div class="form-row">
+                    <label for="password1">Password</label>
+                    <input type="password" class="form-control" placeholder="Password" id="password1" name="password1">
+                </div>
+
+                <div class="form-row">
+                    <label for="password2">Confirm Password</label>
+                    <input type="password" class="form-control" placeholder="Confirm Password" id="password2" name="password2">
+                </div>
+
+                <br>
+                <div class="text-center">
+                    <button type="submit" class="btn btn-primary">Signup</button>
+                </div> 
+
+                <a href="{% url 'login' %}" class="btn" style="color: rgb(128,128,128)">Already have an account?</a>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock content %}

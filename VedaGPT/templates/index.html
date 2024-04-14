@@ -1,0 +1,226 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VedaGPT</title>
+
+    <!-- CSS Files -->
+    {% comment %} <link rel="stylesheet" href="{% static "css/style.css" %}" type="text/css"> {% endcomment %}
+    <link rel="stylesheet" href="{% static "bootstrap/css/bootstrap.min.css" %}" type="text/css">    
+
+    <!-- JS Files -->
+    <script src="{% static "js/jquery.js" %}" type="text/javascript" ></script>
+    <script src="{% static "js/script.js" %}" type="text/javascript"></script>
+    <script src="{% static "js/index.js" %}" type="text/javascript"></script>
+
+
+</head>
+<body class="p-3 mb-2 text-dark" style="background-color: #E9A89B;">
+    
+    <!-- Header -->
+    <header>
+            <nav class="navbar fixed-top" style="background-color: #7AA2E3;">
+                <div class="container-fluid">
+                <!-- Navbar Toggler Button -->
+                <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                
+                <!-- Models Dropdown -->
+
+                
+                <div class="nav-item dropdown">
+                    
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        {{model_selected}}
+                    </a>
+                    <ul class="dropdown-menu">
+                        {% for llm in llm_models %}
+                            <li><a class="dropdown-item" href="{% url 'model' model_no=llm.id %}">{{ llm.name }}</a></li>
+                        {% endfor %}
+                        
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="{% url "AddModel" %}">Add Model</a></li>
+                    </ul>
+                </div>
+                
+                {% if user.username != "AnonymousUser" %}
+                    <h5 class="offcanvas-title" id="offcanvasNavbarLabel">{{user}}</h5>
+                {% endif %}
+                {% if user.username == "AnonymousUser" %} 
+                        <a class="navbar-brand" aria-current="page" href="{% url 'login' %}">login</a>
+                {% else %}
+                        <a class="navbar-brand text-danger" href="{% url 'logout' %}">Logout</a>
+                {% endif %}
+                <!-- Navbar Brand -->
+                <a class="navbar-brand" href="{% url "index" %}">VedaGPT</a>
+                
+                <!-- Offcanvas Navbar -->
+                <div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel" style="background-color: #97E7E1;">
+                    <div class="offcanvas-header">
+                        <h5 class="offcanvas-title" id="offcanvasNavbarLabel">VedaGPT</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                    </div>
+
+                    <!-- Offcanvas Body -->
+                    <div class="offcanvas-body">
+                        <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
+                            <a href="createChat" class="btn btn-primary">New Chat +</a>
+                            <!-- Clear Records Button -->
+                            
+                            <br>
+                            <!-- Dropdown for displaying documents -->
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    Documents
+                                </a>
+                                <div class="dropdown-menu" aria-labelledby="navbarDropdown" id='document'>
+                                  {% for doc in documents %}
+                                          <a class="dropdown-item" href="viewFile/{{ doc.name }}" target="_blank">{{ doc.name }}</a>
+                                  {% endfor %}
+                              </div>
+                            </li>
+                        </ul>
+                        <div>
+                             
+                            
+                        </div>
+                        
+        
+                            </br>
+                            <div class="offcanvas-title">
+                            <h1>History</h1>
+                            </div>
+                            </br>
+                            <form action="{% url "index" %}" method="get">
+                            {% for i in history %}
+                                <div class="row">
+                                    
+                                        <div class="col-10 d-inline">
+                                            <button class="form-control btn btn-warning" type="submit" value="{{i.id}}" id="chatHistory" name="chatHistory">
+                                                {{i.title}}
+                                            </button>
+                                        </div>
+                                        <div class="col-2 d-inline">
+                                            <button type="submit" value="{{i.id}}" id="delete" name="delete" class="close btn text-danger" >X  </button>
+                                        </div>
+                                    
+                                </div>
+                            {% endfor %}
+                        </form>
+
+                        <br><br>
+                        <a href="getHistory" class="btn btn-primary">view History</a>
+                        <form method="post" action="{% url 'clear_records' %}" class='m-1 mb-5 ' >
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger mt-3">Clear All Records</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+{% block content %}
+    <!-- Main Content -->
+
+    
+    <div class="container-fluid m mb-5" >
+        <div class="row m-5">
+
+            <div class="card text-center" style="background-color: #FFEBB2;">
+                {% if documents %} 
+                    <h5 class="card-header">Uploaded File</h5>
+                    {% for doc in documents %}
+                        <div class="card-body">
+                            <a class="btn btn-primary" href="{% url 'view_file' doc.name|urlencode %}" target="_blank">{{ doc.name }}</a>
+                        </div>
+                        
+                    {% endfor %}
+            
+                {% else %}
+                    <h5 class="card-header">Select File here</h5>
+                    <div class="card-body">
+                        <p class="card-text">Files Supported: PDF</p>
+                    </div>
+                    <form id="upload-form" action="{% url "Upload" %}" method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <input type="file" name="file-uploaded" id="file-uploaded" style="display:none;">
+                        
+                        <div class="d-inline p-2 " id="file-upload-filename">
+                            <label for="file-uploaded" class="label-file btn btn-secondary" >Upload File</label>
+                        </div>
+                        <div class="d-inline p-2 ">
+                            <button type="submit" class="btn btn-primary">Upload</button>
+                        </div>
+                        
+                    </form>
+                    
+                {% endif %}
+                <br>
+              </div>
+            
+        </div>
+        
+        <div class="row mt-5" >
+            <div class="col">
+                <div id="result-message" class="text-end m-3 mb-5">
+                    {% for entry in chat_history %}
+                        <!-- User's message -->
+                        <p class="text-end m-3 fw-bold p-3 mb-2 bg-success text-white" style= "border-radius: 10px;"> User: {{ entry.input_prompt }}</p>
+                        <!-- VedaGPT's reply -->
+                        <p class="text-start m-3 fw-bold p-3 mb-2 bg-warning text-dark " id="scrollToDiv" style= "border-radius: 10px;"> VedaGPT:  {{ entry.output }}</p>
+
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Input Form -->
+        
+        <div class="row fixed-bottom m-2" > 
+            <div class="col m-2" >
+                <form id="post-form" >
+                    {% csrf_token %}
+                    <div class="input-group" >
+                        <input type="hidden" name="chat" value="{{chat.id}}" >
+                        {% comment %} <input type="file" name="file" class="form-control" id="file" accept=".txt, .pdf, .docx"> {% endcomment %}
+
+                        <input  type="text" name="message" id="message" class="form-control" placeholder="Enter Prompt" aria-label="Recipient's username" aria-describedby="basic-addon2" style="background-color: #2D9596;">
+                        <input class="input-group-text" type="submit" value="Send" id="basic-addon2" style="background-color: #265073;"/>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock content %}
+
+
+<script>
+
+    // Get the input element
+    var input = document.getElementById('file-uploaded');
+
+    // Add event listener to the input element
+    input.addEventListener('change', showFileName);
+
+    // Function to handle the change event and display the file name
+    function showFileName(event) {
+        // Get the input element
+        var input = event.srcElement;
+
+        // Get the file name
+        var fileName = input.files[0].name;
+
+        // Display the file name
+        var infoArea = document.getElementById('file-upload-filename');
+        infoArea.textContent = 'File name: ' + fileName;
+    }
+
+
+</script>
+
+<script src="{% static "bootstrap/js/bootstrap.bundle.min.js" %}"></script>
+</body>
+</html>
