@@ -87,6 +87,3 @@ We welcome contributions! To contribute to VedaGPT:
 4. Push to the branch (`git push origin feature-branch`).
 5. Create a pull request.
 
-## 📝 License
-
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for more details.
