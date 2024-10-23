@@ -1,0 +1,393 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>VedaGPT</title>
+   <link rel="stylesheet" href="{% static 'css/style.css' %}" type="text/css">
+   <link rel="stylesheet" href="{% static 'bootstrap/css/bootstrap.min.css' %}" type="text/css">
+   <style>
+       /* CSS to enable word wrapping in <pre> elements */
+       .wrapped-pre {
+           white-space: pre-wrap; /* Enables word wrapping */
+           word-wrap: break-word; /* Prevents overflow and breaks long words */
+       }
+       .user {
+        background-color: rgba(0, 0, 0, 0.9); /* Dark background */
+        color: #ffffff;            /* White text */
+        width: 50%;                /* 80% of the screen */
+        padding: 10px;             /* Optional: add some padding for better readability */
+        box-sizing: border-box;    /* Ensure padding doesn't affect width */
+        float: right;              /* Float the element to the right */
+    }
+      
+      .bot {
+        background-color: rgba(0, 0, 0, 0.5); /* Transparent dark background (80% opacity) */
+        color: #ffffff;                      /* White text */
+        width: 80%;                          /* 80% of the screen */
+        padding: 10px;                       /* Optional: add some padding for better readability */
+        box-sizing: border-box;              /* Ensure padding doesn't affect width */
+        margin-right: auto;                  /* Push the entire block to the left */
+      }
+      
+    code{
+        color: #000000;           /* Black text */
+        background-color: rgba(0, 0, 0, 0.8); /* White background */
+    }
+
+   </style>
+</head>
+<body class="p-3 mb-2 text-dark" id="bimage">
+   <header>
+       <nav class="navbar p pt-3 pb-3 fixed-top" style="background-color: rgba(0, 0, 0, 0.5);">
+           <div class="container-fluid">
+               {% if user.is_authenticated %} 
+               <button class="navbar-toggler border-white" id="navtog" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar" style="background-color: rgba(255, 255, 255, 0.1);">
+                   <span class="navbar-toggler-icon" > </span>
+               </button>
+               <div class="nav-item dropdown">
+              
+                   <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                       {{model_selected}}
+                   </a>
+                   <ul class="dropdown-menu">
+                       {% for llm in llm_models %}
+                           <li><a class="dropdown-item text-black" href="{% url 'model' model_no=llm.id %}">{{ llm.name }}</a></li>
+                       {% endfor %}
+   
+                       <li><hr class="dropdown-divider"></li>
+                       <li><a class="dropdown-item text-black" href="{% url 'AddModel' %}">Add Model</a></li>
+                   </ul>
+               </div>
+               <a class="navbar-brand text-white"  style="justify-content: right;" href="{% url 'about_us' %}">About us</a>
+     
+               <h5 class="offcanvas-title text-white" id="offcanvasNavbarLabel">Welcome, {{user}}!</h5>
+       
+               <b>
+                   <a class="nav-link active text-danger" href="{% url 'logout' %}">Logout</a>
+               </b>
+               <!-- Navbar Brand -->
+               <a class="navbar-brand text-white"  style="justify-content: right;" href="{% url 'index' %}">VedaGPT</a>
+
+
+
+
+               <!-- Logo Image -->
+               <div class="ms-3">
+                   <img src="{% static 'images/drdo-logo.png' %}" alt="Logo" class="logo" style="height: 60px;">
+               </div>
+               {% endif %}
+           <div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel" style="background-color: rgba(255, 255, 255,0.9)" >
+           
+               <div class="offcanvas-header">
+                   <h5 class="offcanvas-title" id="offcanvasNavbarLabel">VedaGPT</h5>
+                   <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+               </div>
+               <div class="offcanvas-body">
+                  
+                   <div>
+                       <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
+                          
+                           <a href="createChat" class="btn btn-primary">New Chat +</a>
+                           <!-- Clear Records Button -->
+                          
+                           <br>
+                           <!-- Dropdown for displaying documents -->
+                           <li class="nav-item dropdown">
+                               <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                   Documents
+                               </a>
+                               <div class="dropdown-menu" aria-labelledby="navbarDropdown" id='document'>
+                                 {% for doc in documents %}
+                                         <a class="dropdown-item" href="viewFile/{{ doc.name }}" target="_blank">{{ doc.name }}</a>
+                                 {% endfor %}
+                             </div>
+                           </li>
+                       </ul>
+                   </div>
+                   </br>
+                   <div class="offcanvas-title">
+                       <h5>History</h4>
+                   </div>
+                   </br>
+                   <form action="{% url 'index' %}" method="get">
+                       {% for i in history %}
+                           <div class="row">
+                              
+                                   <div class="col-10 d-inline">
+                                       <button class="form-control btn btn-warning" type="submit" value="{{i.id}}" id="chatHistory" name="chatHistory">
+                                           {{i.title}}
+                                       </button>
+                                   </div>
+                                   <div class="col-2 d-inline">
+                                       <button type="submit" value="{{i.id}}" id="delete" name="delete" class="close btn text-danger" >X  </button>
+                                   </div>
+                              
+                           </div>
+                       {% endfor %}
+                   </form>
+                   <br><br>
+                   <a href="getHistory" class="btn btn-primary">view History</a>
+                   <form method="post" action="{% url 'clear_records' %}" class='m-1 mb-5 ' >
+                       {% csrf_token %}
+                       <button type="submit" class="btn btn-danger mt-3">Clear All Records</button>
+                   </form>
+               </div>
+           </div>
+       </div>
+   </nav>
+</header>
+<div class="row mt-4">
+    <div class="col">
+        <div class="text-end mb-5">
+           
+        </div>
+    </div>
+</div>
+   {% block content %}
+   <div class="container-fluid ">
+       
+       <div class="row m-3 ">
+           <div class="card text-center text-light p-3" style="background-color: rgba(0, 0, 0, 0.5); ">
+               {% if documents %}
+                   <h5 class="card-header ">Uploaded File</h5>
+                   {% for doc in documents %}
+                       <div class="card-body">
+                           <a class="btn btn-primary" href="{% url 'view_file' doc.name|urlencode %}" target="_blank">{{ doc.name }}</a>
+                       </div>
+                      
+                   {% endfor %}
+          
+               {% else %}
+                   <h5 class="card-header">Select File here</h5>
+                   <div class="card-body">
+                       <p class="card-text">Files Supported: PDF</p>
+                   </div>
+                   <form id="upload-form" action="{% url 'Upload' %}" method="post" enctype="multipart/form-data">
+                       {% csrf_token %}
+                       <input type="file" name="file-uploaded" id="file-uploaded" style="display:none;">
+                      
+                       <div class="d-inline p-2 " id="file-upload-filename">
+                           <label for="file-uploaded" class="label-file btn btn-outline-light">Upload File</label>
+                       </div>
+                       <div class="d-inline p-2 ">
+                           <button type="submit" class="btn btn-primary">Upload</button>
+                       </div>
+                      
+                   </form>
+                  
+               {% endif %}
+            
+           </div>
+       </div>
+       <script>
+            document.addEventListener("DOMContentLoaded", function() {
+                var input = document.getElementById('file-uploaded');
+                var infoArea = document.getElementById('file-upload-filename');
+        
+                if (input) {
+                    input.addEventListener('change', showFileName);
+                }
+        
+                function showFileName(event) {
+                    var input = event.target;
+                    var fileName = input.files[0].name;
+                    infoArea.textContent = 'File name: ' + fileName;
+                }
+            });
+        </script>
+    
+       <div class="row mt-3">
+           <div class="col">
+               <div id="History" class="text-end ">
+                   {% for entry in chat_history %}
+                       <pre class="wrapped-pre m-3 p-3 mb-2 user" style="border-radius: 10px;"> {{user}}: {{ entry.input_prompt|safe }}</pre>
+                       <pre class="wrapped-pre text-start m-3 p-3 mb-2 bot" id="scrollToDiv" style="border-radius: 10px;">{{ entry.output|safe }}</pre>
+                   {% endfor %}
+               </div>
+           </div>
+       </div>
+     
+       <div class="row ">
+           <div class="col">
+               <div id="result-message" class="text-end ">
+               </div>
+           </div>
+       </div>
+       {% comment %} <div class="row mt-5">
+           <div class="col">
+               <div class="text-end m-3 mb-5">
+                  
+               </div>
+           </div>
+       </div> {% endcomment %}
+   </div>
+   <div class="container-fluid m mb-5" id="fixedb">
+       <div class="row m-2" style="justify-content: center;">
+                   <div class="col-md-8 m-2">
+                       <form id="send-message-form" style="background-color: rgba(255, 255, 255, 0.5); ">
+                           <textarea name="message" id="message" class="form-control text-light" placeholder="Enter Prompt" aria-label="Recipient's username" aria-describedby="basic-addon2" style="background-color: rgba(0, 0, 0, 0.9); max-height: 500px;"></textarea>
+                           <div class="input-group">
+                               {% for doc in documents %}
+                                   <input type="hidden" name="doc" id='doc' value='{{ doc.name }}'>
+                               {% endfor %}
+                               <input type="hidden" name="chat_id" id='chat_id' value='{{ chat_id }}'>
+                               <input type="hidden" name="model_selected" id='model_selected' value='{{ model_selected }}'>
+                               <select class="form-select form-select-sm" id='type' name="type" aria-label="Default select example" style="background-color: rgba(255, 255, 255, 0.5); ">
+                                   <option value="1" selected>Q & A</option>
+                                   <option value="2">Summarizer</option>
+                               </select>
+                               <input class="input-group-text btn btn-dark" type="submit" value="Send" id="chat-message-submit" />
+                           </div>
+                       </form>
+                   </div>
+               </div>
+           </div>
+           <script>
+            const chatSocket = new WebSocket('ws://' + window.location.host);
+        
+            chatSocket.onmessage = function(e) {
+                const data = JSON.parse(e.data);
+                const result = data.result;
+                const end = data.end || 0;
+                const progress = data.progress || 0;
+                const type = data.type || 'qa'; // default to 'qa' if type is not provided
+        
+                if (type === 'summarization') {
+                    displaySummarizationResult(result, progress, end);
+                } else {
+                    displayQAResult(result);
+                }
+        
+                if (end == 1) {
+                    enableSendButton();
+                    document.getElementById('progress').remove();
+                    document.getElementById('loading').remove();
+                     // Enable the send button when the model finishes
+                }
+                window.scrollTo(0, document.body.scrollHeight);
+            };
+        
+            function displaySummarizationResult(result, progress, end) {
+                const latestMessage = document.querySelector('.replyGPT:last-of-type');
+        
+                if (latestMessage) {
+                    const loadingElement = latestMessage.querySelector('#loading');
+                    const progressElement = latestMessage.querySelector('#progress');
+        
+                    if (loadingElement) {
+                        loadingElement.remove();
+                    }
+                    if (progressElement) {
+                        progressElement.remove();
+                    }
+        
+                    latestMessage.innerHTML += '<span>' + result + '</span><br>';
+        
+                    if (end !== 1) {
+                        latestMessage.innerHTML += '<div class="progress" role="progressbar" aria-label="Success example" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100" id= "loading"><div class="progress-bar bg-success" style="width: '+progress+'%">'+progress+'%</div></div><span id="progress"><h5></h5></span>'
+                    }
+                }
+            }
+        
+            function displayQAResult(result) {
+                const latestMessage = document.querySelector('.replyGPT:last-of-type');
+        
+                if (latestMessage) {
+                    latestMessage.innerHTML += '<span>' + result + '</span><br>';
+                }
+            }
+        
+            // Function to send message
+            function sendMessage() {
+                let message = document.querySelector('#message').value;
+                let chat_id = document.querySelector('#chat_id').value;
+                let model_selected = document.querySelector('#model_selected').value;
+                let type = document.querySelector('#type').value;
+        
+                if (message.trim() === "") {
+                    alert("Please enter a message to send.");
+                    return;
+                }
+        
+                disableSendButton(); // Disable the send button before sending the message
+        
+                let documents = [];
+                document.querySelectorAll('input[name="doc"]').forEach(function(docElement) {
+                    documents.push(docElement.value);
+                });
+        
+                var userMessage = '<pre class="wrapped-pre m-3 p-3 user" style="border-radius: 10px;" > User: ' + message + '</pre><pre class="wrapped-pre Hello m-3  p-3 mb-2 placeholder-glow replyGPT text-start bot" style="border-radius: 10px;"><div class="progress" role="progressbar" aria-label="Success example" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100" id= "loading"><div class="progress-bar bg-success" style="width: 0%">0%</div></div><span id="progress"></span></pre>';
+                document.getElementById('result-message').innerHTML += userMessage;
+        
+                document.querySelector('#message').value = '';
+        
+                let data = {
+                    'message': message,
+                    'chat_id': chat_id,
+                    'model_selected': model_selected,
+                    'type': type,
+                    'documents': documents[0],
+                };
+        
+                chatSocket.send(JSON.stringify(data));
+                window.scrollTo(0, document.body.scrollHeight);
+            }
+        
+            // Function to disable the send button
+            function disableSendButton() {
+                document.getElementById('chat-message-submit').disabled = true;
+            }
+        
+            // Function to enable the send button
+            function enableSendButton() {
+                document.getElementById('chat-message-submit').disabled = false;
+            }
+        
+            // Event listener for the form submission
+            document.getElementById('send-message-form').addEventListener("submit", function(event) {
+                event.preventDefault();
+                sendMessage(); // Call the sendMessage function when the form is submitted
+            });
+        
+            // Event listener for Enter key press
+            document.getElementById('message').addEventListener("keypress", function(event) {
+                if (event.key === "Enter" && !event.shiftKey) {
+                    event.preventDefault();
+                    sendMessage(); // Call the sendMessage function when Enter key is pressed
+                }
+            });
+        </script>
+        
+        
+        
+      
+      
+      
+   {% endblock content %}
+
+
+
+
+ 
+  
+
+
+
+
+   <script src="{% static 'bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+
+
+
+
+</body>
+</html>
+
+
+
+
+
+
+
+

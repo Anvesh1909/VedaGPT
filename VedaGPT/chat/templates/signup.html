@@ -1,0 +1,86 @@
+{% extends "index.html" %}
+{% load static %}
+
+{% block content %}
+
+</br></br></br>
+<br>
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-6">
+
+            <div class="text-center">
+                <div class="btn-group">
+                    <!-- <a href="/login" class="btn btn-secondary">Login</a>
+                    <a href="/signup" class="btn btn-primary active" aria-current="page">Sign Up</a> -->
+                    <div class="ms-2">
+                        <img src="{% static 'images/drdo-logo.png' %}" alt="Logo" class="logo" style="height: 100px;">
+                    </div>      
+                </div>
+            </div>
+
+            <form action="" method="post">
+                {% csrf_token %}
+                <br>
+                <div class="text text-center p-1"  id="signup-header">
+                    <h1>Sign Up</h1>
+                </div>
+            
+
+                <p style="color: red;">{{ a }}</p>
+
+                <div class="form-row">
+                    <label for="username" style="color: white;">Username</label>
+                    <input type="text" class="form-control glow-border" placeholder="Username" name="username" id="username">
+                </div>
+
+                <div class="form-row">
+                    <label for="email" style="color: white;">Email</label>
+                    <input type="email" class="form-control glow-border" placeholder="Email or Phone" name="email" id="email">
+                </div>
+
+                <div class="form-row">
+                    <label for="password1" style="color: white;">Password</label>
+                    <input type="password" class="form-control glow-border" placeholder="Password" id="password1" name="password1">
+                </div>
+
+                <div class="form-row">
+                    <label for="password2" style="color: white;">Confirm Password</label>
+                    <input type="password" class="form-control glow-border" placeholder="Confirm Password" id="password2" name="password2">
+                </div>
+
+                <br>
+                <div class="text-center">
+                    <button type="submit" class="btn btn-primary">Signup</button>
+                </div> 
+                <b>
+                    <a href="{% url 'login' %}" class="btn" style="color: white;">Already have an account?</a> 
+                </b>
+           
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+
+   #signup-header {
+        background-color: rgba(0, 0, 0, 0.4); /* Adjust the alpha value to change transparency */
+        color: white; /* Set text color to white */
+        padding: 1rem; /* Adjust padding as needed */
+    }
+
+    .glow-border {
+        border: 2px solid #ced4da;
+        transition: border-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+    }
+
+    .glow-border:focus {
+        border-color: #bf0d40;
+        box-shadow: 0 0 12px rgba(128, 189, 255, 0.8); /* Increased blur radius and opacity */
+        outline: none;
+    }
+</style>
+
+{% endblock content %}

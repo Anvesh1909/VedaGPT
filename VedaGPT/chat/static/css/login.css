@@ -1,0 +1,7 @@
+
+  
+  .background-image-container {
+    background-image: url('/static/images/bg2.jpg');
+    background-size: cover;
+    background-repeat: no-repeat;
+}

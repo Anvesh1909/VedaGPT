@@ -1,0 +1,48 @@
+#bimage {
+  /* Set background image */
+  background-image: url("/static/images/bg3.jpg"); /* Replace 'background-image.jpg' with the path to your image */
+
+  background-attachment: fixed;
+  /* Add opacity or any other effects specific to the background image */
+  /* opacity: 0.2; */
+
+  /* Set background image size */
+  background-size: cover; /* This will cover the entire background */
+
+  /* Set background image position */
+  background-position: center; /* Center the background image */
+
+  /* Set background repeat */
+  background-repeat: no-repeat; /* Do not repeat the background image */
+}
+
+/* Style for moving the content to the right */
+.move-right {
+  transform: translateX(70px); /* Adjust as needed */
+}
+
+/* Add this to your main CSS file or inside a <style> tag in your HTML */
+.logo {
+  height: 60px; /* Adjust the size as needed */
+  width: auto;
+}
+
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.navbar-brand {
+  margin-right: auto; /* Pushes the brand to the left */
+}
+
+.ms-auto {
+  margin-left: auto; /* Pushes the logo to the right */
+}
+
+.ms-3 {
+  margin-left: 1rem; /* Adds some space between the brand and the logo */
+}
+
+
